@@ -1,0 +1,45 @@
+#Créer un premier container PostgreSQL
+version: '3.8'
+
+services:
+  db:
+    image: postgres:13
+    container_name: postgres_container
+    environment:
+      POSTGRES_USER: u_bdd_avancee
+      POSTGRES_PASS WORD: bdd-avancee
+      POSTGRES_DB: bdd-avancee
+    ports:
+        - "5432:5432"
+    volumes:
+        - pgdata:/var/lib/postgresql/data
+    networks:
+        - bdd-avancee-network
+  php:
+    build: ./php
+    container_name: php_container
+    volumes:
+      - ./:/var/www/html
+      - ./php/error_reporting.ini:/usr/local/etc/php/conf.d/error_reporting.ini
+    depends_on:
+      - db
+    networks:
+      - bdd-avancee-network
+  nginx:
+    image: nginx:latest
+    container_name: nginx_container
+    ports:
+      - "8080:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - php
+    networks:
+      - bdd-avancee-network
+
+volumes:
+    pgdata:
+      driver: local
+networks:
+    bdd-avancee-network:
+        driver: bridge
